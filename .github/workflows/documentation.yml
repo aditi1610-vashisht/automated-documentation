@@ -1,0 +1,36 @@
+
+name: Automated Documentation
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  generate-documentation:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate Documentation
+        run: |
+          mkdir -p docs
+          echo "# Project Documentation" > docs/CHANGELOG.md
+          echo "" >> docs/CHANGELOG.md
+          echo "## Git Commit History" >> docs/CHANGELOG.md
+          git log --pretty=format:"- %h - %s (%an)" >> docs/CHANGELOG.md
+
+      - name: Commit Documentation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/CHANGELOG.md
+          git diff --cached --quiet || git commit -m "Update automated documentation"
+          git push
